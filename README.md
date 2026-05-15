@@ -80,6 +80,7 @@ task-list/
 │   ├── style.css        # グローバルスタイル
 │   └── vite-env.d.ts    # Vite型定義
 ├── index.html           # HTMLエントリーポイント
+├── icon.svg             # リポジトリ用アイコン（SVG）
 ├── package.json         # プロジェクト設定
 ├── tsconfig.json        # TypeScript設定
 ├── vite.config.ts       # Vite設定
