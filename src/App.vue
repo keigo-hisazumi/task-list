@@ -119,23 +119,24 @@ onUnmounted(() => {
   <AuthForm v-else-if="!currentUser" />
 
   <div v-else class="todo-app">
-    <!-- 固定ヘッダー -->
-    <header class="app-header">
-      <h1>📝 Todoリスト</h1>
-      <div class="user-info">
-        <span class="user-email">{{ currentUser.email }}</span>
-        <button class="logout-btn" @click="logout">ログアウト</button>
-      </div>
-    </header>
+    <!-- ヘッダー＋進捗をまとめてスティッキー固定 -->
+    <div class="sticky-top">
+      <header class="app-header">
+        <h1>Todoリスト</h1>
+        <div class="user-info">
+          <span class="user-email">{{ currentUser.email }}</span>
+          <button class="logout-btn" @click="logout">ログアウト</button>
+        </div>
+      </header>
 
-    <!-- 進捗エリア -->
-    <div class="progress-section">
-      <div class="progress-labels">
-        <span>進捗 {{ progressPercent }}%</span>
-        <span>{{ completedCount }} / {{ todos.length }} 完了</span>
-      </div>
-      <div class="progress-bar-track">
-        <div class="progress-bar-fill" :style="{ width: progressPercent + '%' }"></div>
+      <div class="progress-section">
+        <div class="progress-labels">
+          <span>進捗 {{ progressPercent }}%</span>
+          <span>{{ completedCount }} / {{ todos.length }} 完了</span>
+        </div>
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" :style="{ width: progressPercent + '%' }"></div>
+        </div>
       </div>
     </div>
 
@@ -212,68 +213,84 @@ onUnmounted(() => {
   flex-direction: column;
 }
 
-/* ヘッダー */
-.app-header {
+/* スティッキーまとめコンテナ（ヘッダー＋進捗） */
+.sticky-top {
   position: sticky;
   top: 0;
   z-index: 10;
+  background-color: #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* ヘッダー */
+.app-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1em 1.2em;
-  background-color: #242424;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  flex-wrap: wrap;
+  padding: 0.75em 1.2em;
   gap: 0.5em;
+  overflow: hidden;
 }
 
 .app-header h1 {
-  font-size: 1.6em;
+  font-size: 1.3em;
   margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
 }
 
 .user-info {
   display: flex;
   align-items: center;
-  gap: 0.8em;
+  gap: 0.6em;
+  flex-shrink: 0;
 }
 
 .user-email {
-  font-size: 0.8em;
-  opacity: 0.6;
+  font-size: 0.78em;
+  color: rgba(33, 53, 71, 0.55);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
 }
 
 .logout-btn {
   background-color: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  padding: 0.35em 0.75em;
-  font-size: 0.8em;
+  border: 1px solid rgba(33, 53, 71, 0.2);
+  padding: 0.3em 0.65em;
+  font-size: 0.78em;
   border-radius: 6px;
   cursor: pointer;
+  color: #213547;
+  white-space: nowrap;
 }
 
 .logout-btn:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(33, 53, 71, 0.05);
+  border-color: rgba(33, 53, 71, 0.35);
 }
 
 /* 進捗セクション */
 .progress-section {
-  padding: 1em 1.2em 0.8em;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.6em 1.2em 0.8em;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .progress-labels {
   display: flex;
   justify-content: space-between;
-  font-size: 0.85em;
-  opacity: 0.7;
-  margin-bottom: 0.5em;
+  font-size: 0.82em;
+  color: rgba(33, 53, 71, 0.6);
+  margin-bottom: 0.45em;
 }
 
 .progress-bar-track {
   width: 100%;
   height: 6px;
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(0, 0, 0, 0.08);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -296,15 +313,17 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 1em;
-  padding: 1em;
+  padding: 0.9em 1em;
   margin-bottom: 0.5em;
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: #ffffff;
   border-radius: 10px;
-  transition: background-color 0.2s;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  transition: background-color 0.15s, box-shadow 0.15s;
 }
 
 .todo-item:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: #f8f8ff;
+  box-shadow: 0 1px 6px rgba(100, 108, 255, 0.1);
 }
 
 .todo-item.completed .todo-text {
@@ -315,21 +334,25 @@ onUnmounted(() => {
 .todo-text {
   flex: 1;
   text-align: left;
+  color: #213547;
 }
 
 .delete-btn {
-  background-color: #ff4444;
-  padding: 0.3em 0.7em;
-  font-size: 0.85em;
+  background-color: #fee2e2;
+  color: #dc2626;
+  border: none;
+  padding: 0.3em 0.65em;
+  font-size: 0.82em;
   border-radius: 6px;
 }
 
 .delete-btn:hover {
-  background-color: #ff6666;
+  background-color: #fecaca;
+  border-color: transparent;
 }
 
 .empty-message {
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(33, 53, 71, 0.4);
   font-style: italic;
   padding: 3em 1em;
   text-align: center;
@@ -345,7 +368,7 @@ onUnmounted(() => {
   border-radius: 50%;
   background: linear-gradient(135deg, #646cff, #a78bfa);
   border: none;
-  box-shadow: 0 4px 16px rgba(100, 108, 255, 0.45);
+  box-shadow: 0 4px 16px rgba(100, 108, 255, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -357,7 +380,7 @@ onUnmounted(() => {
 
 .fab:hover {
   transform: scale(1.1);
-  box-shadow: 0 6px 20px rgba(100, 108, 255, 0.6);
+  box-shadow: 0 6px 20px rgba(100, 108, 255, 0.55);
   border-color: transparent;
 }
 
@@ -372,7 +395,7 @@ onUnmounted(() => {
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.35);
   z-index: 30;
 }
 
@@ -382,17 +405,17 @@ onUnmounted(() => {
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: #2e2e2e;
+  background-color: #ffffff;
   border-radius: 20px 20px 0 0;
   padding: 1em 1.5em 2em;
   z-index: 40;
-  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.12);
 }
 
 .add-panel-handle {
   width: 40px;
   height: 4px;
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(0, 0, 0, 0.15);
   border-radius: 2px;
   margin: 0 auto 1.2em;
 }
@@ -401,6 +424,7 @@ onUnmounted(() => {
   font-size: 1.1em;
   margin: 0 0 1em;
   text-align: left;
+  color: #213547;
 }
 
 .add-panel-input {
@@ -409,15 +433,16 @@ onUnmounted(() => {
   font-size: 1em;
   padding: 0.75em 1em;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background-color: rgba(255, 255, 255, 0.07);
-  color: inherit;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  background-color: #f9f9f9;
+  color: #213547;
   margin-bottom: 1em;
 }
 
 .add-panel-input:focus {
   outline: none;
   border-color: #646cff;
+  background-color: #ffffff;
 }
 
 .add-panel-actions {
@@ -428,15 +453,16 @@ onUnmounted(() => {
 
 .cancel-btn {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(0, 0, 0, 0.18);
   padding: 0.6em 1.2em;
   border-radius: 8px;
   cursor: pointer;
+  color: #213547;
 }
 
 .cancel-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.3);
 }
 
 .add-btn {
@@ -455,7 +481,7 @@ onUnmounted(() => {
 }
 
 .add-btn:not(:disabled):hover {
-  opacity: 0.9;
+  opacity: 0.88;
   border-color: transparent;
 }
 
@@ -479,64 +505,5 @@ onUnmounted(() => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
-}
-
-/* ライトモード */
-@media (prefers-color-scheme: light) {
-  .app-header {
-    background-color: #ffffff;
-    border-bottom-color: rgba(0, 0, 0, 0.08);
-  }
-
-  .logout-btn {
-    border-color: rgba(0, 0, 0, 0.2);
-  }
-
-  .logout-btn:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-  }
-
-  .progress-section {
-    border-bottom-color: rgba(0, 0, 0, 0.06);
-  }
-
-  .progress-bar-track {
-    background-color: rgba(0, 0, 0, 0.08);
-  }
-
-  .todo-item {
-    background-color: rgba(0, 0, 0, 0.04);
-  }
-
-  .todo-item:hover {
-    background-color: rgba(0, 0, 0, 0.08);
-  }
-
-  .empty-message {
-    color: rgba(0, 0, 0, 0.4);
-  }
-
-  .add-panel {
-    background-color: #f5f5f5;
-  }
-
-  .add-panel-input {
-    background-color: #ffffff;
-    border-color: rgba(0, 0, 0, 0.15);
-    color: #213547;
-  }
-
-  .cancel-btn {
-    border-color: rgba(0, 0, 0, 0.2);
-    color: #213547;
-  }
-
-  .cancel-btn:hover {
-    background: rgba(0, 0, 0, 0.05);
-  }
-
-  .add-panel-handle {
-    background: rgba(0, 0, 0, 0.2);
-  }
 }
 </style>
