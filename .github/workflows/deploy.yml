@@ -32,6 +32,9 @@ jobs:
       - name: ビルド
         run: npm run build
 
+      - name: .nojekyllファイルの作成
+        run: touch dist/.nojekyll
+
       - name: GitHub Pagesへのデプロイ
         uses: JamesIves/github-pages-deploy-action@v4
         with:
