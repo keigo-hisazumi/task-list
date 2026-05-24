@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { onAuthStateChanged, signOut, type User } from 'firebase/auth'
 import {
   collection,
@@ -30,9 +30,22 @@ const showAddPanel = ref(false)
 let unsubscribeTodos: (() => void) | null = null
 
 const completedCount = computed(() => todos.value.filter(t => t.completed).length)
+const incompleteCount = computed(() => todos.value.filter(t => !t.completed).length)
 const progressPercent = computed(() =>
   todos.value.length === 0 ? 0 : Math.round((completedCount.value / todos.value.length) * 100)
 )
+
+const updateBadge = (count: number) => {
+  if ('setAppBadge' in navigator) {
+    if (count > 0) {
+      navigator.setAppBadge(count)
+    } else {
+      navigator.clearAppBadge()
+    }
+  }
+}
+
+watch(incompleteCount, updateBadge)
 
 const subscribeTodos = (uid: string) => {
   const todosRef = collection(db, 'users', uid, 'todos')
@@ -108,6 +121,7 @@ onMounted(() => {
 onUnmounted(() => {
   unsubscribeAuth?.()
   unsubscribeTodos?.()
+  if ('clearAppBadge' in navigator) navigator.clearAppBadge()
 })
 </script>
 
