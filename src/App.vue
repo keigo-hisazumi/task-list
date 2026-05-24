@@ -45,7 +45,7 @@ const updateBadge = (count: number) => {
   }
 }
 
-watch(incompleteCount, updateBadge)
+watch(incompleteCount, updateBadge, { immediate: true })
 
 const subscribeTodos = (uid: string) => {
   const todosRef = collection(db, 'users', uid, 'todos')
@@ -89,7 +89,15 @@ const logout = async () => {
   await signOut(auth)
 }
 
-const openAddPanel = () => {
+const openAddPanel = async () => {
+  // iOS requires notification permission for setAppBadge to display on the home screen icon.
+  // Permission must be requested from a user gesture handler.
+  if ('Notification' in window && Notification.permission === 'default') {
+    const permission = await Notification.requestPermission()
+    if (permission === 'granted') {
+      updateBadge(incompleteCount.value)
+    }
+  }
   showAddPanel.value = true
   newTodoText.value = ''
 }
