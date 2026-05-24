@@ -34,9 +34,10 @@ jobs:
         if: github.event.action != 'closed'
         run: npm run build
         env:
-          VITE_BASE_URL: /task-list/pr-preview/pr-${{ github.event.pull_request.number }}/
+          VITE_BASE_URL: /task-list/pr-${{ github.event.pull_request.number }}/
 
       - name: PRプレビューのデプロイ・削除
         uses: rossjrw/pr-preview-action@v1
         with:
           source-dir: dist
+          umbrella-dir: '.'
