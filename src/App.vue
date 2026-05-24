@@ -89,15 +89,7 @@ const logout = async () => {
   await signOut(auth)
 }
 
-const openAddPanel = async () => {
-  // iOS requires notification permission for setAppBadge to display on the home screen icon.
-  // Permission must be requested from a user gesture handler.
-  if ('Notification' in window && Notification.permission === 'default') {
-    const permission = await Notification.requestPermission()
-    if (permission === 'granted') {
-      updateBadge(incompleteCount.value)
-    }
-  }
+const openAddPanel = () => {
   showAddPanel.value = true
   newTodoText.value = ''
 }
@@ -187,6 +179,7 @@ onUnmounted(() => {
     <!-- FAB（右下の丸ボタン） -->
     <button class="fab" @click="openAddPanel" aria-label="タスクを追加">
       <span class="fab-icon">＋</span>
+      <span v-if="incompleteCount > 0" class="fab-badge">{{ incompleteCount > 99 ? '99+' : incompleteCount }}</span>
     </button>
 
     <!-- オーバーレイ -->
@@ -411,6 +404,25 @@ onUnmounted(() => {
   line-height: 1;
   color: #fff;
   font-weight: 300;
+}
+
+.fab-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.65em;
+  font-weight: 700;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid #fff;
+  line-height: 1;
 }
 
 /* オーバーレイ */
