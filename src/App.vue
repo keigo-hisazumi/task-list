@@ -193,6 +193,12 @@ const updateTodo = async () => {
   closeEditPanel()
 }
 
+const deleteTodoAndClose = async () => {
+  if (!currentUser.value || !editingTodo.value) return
+  await deleteTodo(editingTodo.value.id)
+  closeEditPanel()
+}
+
 const toggleTodo = async (id: string) => {
   if (!currentUser.value) return
   const todo = todos.value.find((t) => t.id === id)
@@ -315,7 +321,6 @@ onUnmounted(() => {
           />
         </span>
         <span class="todo-text">{{ todo.text }}</span>
-        <button class="delete-btn" @click.stop="deleteTodo(todo.id)">削除</button>
       </div>
 
       <p v-if="todos.length === 0" class="empty-message">
@@ -384,9 +389,12 @@ onUnmounted(() => {
           @keyup.enter="updateTodo"
           autofocus
         />
-        <div class="add-panel-actions">
-          <button class="cancel-btn" @click="closeEditPanel">キャンセル</button>
-          <button class="add-btn" @click="updateTodo" :disabled="editTodoText.trim() === ''">保存</button>
+        <div class="add-panel-actions edit-panel-actions">
+          <button class="delete-btn edit-delete-btn" @click="deleteTodoAndClose">削除</button>
+          <div class="edit-panel-actions-right">
+            <button class="cancel-btn" @click="closeEditPanel">キャンセル</button>
+            <button class="add-btn" @click="updateTodo" :disabled="editTodoText.trim() === ''">保存</button>
+          </div>
         </div>
       </div>
     </Transition>
@@ -559,6 +567,20 @@ onUnmounted(() => {
 .delete-btn:hover {
   background-color: #fecaca;
   border-color: transparent;
+}
+
+.edit-panel-actions {
+  justify-content: space-between;
+}
+
+.edit-panel-actions-right {
+  display: flex;
+  gap: 0.75em;
+}
+
+.edit-delete-btn {
+  padding: 0.6em 1.2em;
+  font-size: 1em;
 }
 
 .empty-message {
