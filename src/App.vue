@@ -199,6 +199,14 @@ const deleteTodoAndClose = async () => {
   closeEditPanel()
 }
 
+const deleteCompletedTodos = async () => {
+  if (!currentUser.value) return
+  const completed = todos.value.filter(t => t.completed)
+  await Promise.all(
+    completed.map(t => deleteDoc(doc(db, 'users', currentUser.value!.uid, 'todos', t.id)))
+  )
+}
+
 const toggleTodo = async (id: string) => {
   if (!currentUser.value) return
   const todo = todos.value.find((t) => t.id === id)
@@ -291,7 +299,15 @@ onUnmounted(() => {
 
       <div class="progress-section">
         <div class="progress-labels">
-          <span>進捗 {{ progressPercent }}%</span>
+          <div class="progress-labels-left">
+            <button
+              v-if="completedCount > 0"
+              class="delete-completed-btn"
+              @click="deleteCompletedTodos"
+              :title="`チェック済み ${completedCount} 件を削除`"
+            >完了済みを削除</button>
+            <span>進捗 {{ progressPercent }}%</span>
+          </div>
           <span>{{ completedCount }} / {{ todos.length }} 完了</span>
         </div>
         <div class="progress-bar-track">
@@ -489,9 +505,32 @@ onUnmounted(() => {
 .progress-labels {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   font-size: 0.82em;
   color: rgba(33, 53, 71, 0.6);
   margin-bottom: 0.45em;
+}
+
+.progress-labels-left {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+}
+
+.delete-completed-btn {
+  background-color: #fee2e2;
+  color: #dc2626;
+  border: none;
+  padding: 0.2em 0.55em;
+  font-size: 0.85em;
+  border-radius: 5px;
+  cursor: pointer;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.delete-completed-btn:hover {
+  background-color: #fecaca;
 }
 
 .progress-bar-track {
