@@ -28,12 +28,13 @@ const newTodoText = ref('')
 const showAddPanel = ref(false)
 const notificationPermission = ref<NotificationPermission | 'unsupported'>('unsupported')
 
-// スワイプキャンセル用
+const SWIPE_CLOSE_THRESHOLD = 100
+
+// 追加パネル スワイプ用
 const panelTranslateY = ref(0)
 const isDragging = ref(false)
 const isSwipeClosing = ref(false)
 let dragStartY = 0
-const SWIPE_CLOSE_THRESHOLD = 100
 
 const addPanelStyle = computed(() => {
   if (isSwipeClosing.value) {
@@ -69,6 +70,52 @@ const onPanelTouchEnd = () => {
   } else {
     isDragging.value = false
     nextTick(() => { panelTranslateY.value = 0 })
+  }
+}
+
+// 編集パネル用
+const showEditPanel = ref(false)
+const editingTodo = ref<TodoItem | null>(null)
+const editTodoText = ref('')
+const editPanelTranslateY = ref(0)
+const isEditDragging = ref(false)
+const isEditSwipeClosing = ref(false)
+let editDragStartY = 0
+
+const editPanelStyle = computed(() => {
+  if (isEditSwipeClosing.value) {
+    return { transform: 'translateY(100%)', transition: 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)' }
+  }
+  if (isEditDragging.value) {
+    return { transform: `translateY(${editPanelTranslateY.value}px)`, transition: 'none' }
+  }
+  return { transform: `translateY(${editPanelTranslateY.value}px)`, transition: 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)' }
+})
+
+const onEditPanelTouchStart = (e: TouchEvent) => {
+  editDragStartY = e.touches[0].clientY
+  editPanelTranslateY.value = 0
+  isEditDragging.value = true
+}
+
+const onEditPanelTouchMove = (e: TouchEvent) => {
+  if (!isEditDragging.value) return
+  const delta = e.touches[0].clientY - editDragStartY
+  editPanelTranslateY.value = Math.max(0, delta)
+}
+
+const onEditPanelTouchEnd = () => {
+  if (editPanelTranslateY.value > SWIPE_CLOSE_THRESHOLD) {
+    isEditDragging.value = false
+    isEditSwipeClosing.value = true
+    setTimeout(() => {
+      isEditSwipeClosing.value = false
+      editPanelTranslateY.value = 0
+      closeEditPanel()
+    }, 300)
+  } else {
+    isEditDragging.value = false
+    nextTick(() => { editPanelTranslateY.value = 0 })
   }
 }
 
@@ -119,6 +166,37 @@ const addTodo = async () => {
 const deleteTodo = async (id: string) => {
   if (!currentUser.value) return
   await deleteDoc(doc(db, 'users', currentUser.value.uid, 'todos', id))
+}
+
+const openEditPanel = (todo: TodoItem) => {
+  editingTodo.value = todo
+  editTodoText.value = todo.text
+  editPanelTranslateY.value = 0
+  isEditDragging.value = false
+  isEditSwipeClosing.value = false
+  showEditPanel.value = true
+}
+
+const closeEditPanel = () => {
+  showEditPanel.value = false
+  editingTodo.value = null
+  editTodoText.value = ''
+  editPanelTranslateY.value = 0
+  isEditDragging.value = false
+}
+
+const updateTodo = async () => {
+  if (!currentUser.value || !editingTodo.value || editTodoText.value.trim() === '') return
+  await updateDoc(doc(db, 'users', currentUser.value.uid, 'todos', editingTodo.value.id), {
+    text: editTodoText.value.trim(),
+  })
+  closeEditPanel()
+}
+
+const deleteTodoAndClose = async () => {
+  if (!currentUser.value || !editingTodo.value) return
+  await deleteTodo(editingTodo.value.id)
+  closeEditPanel()
 }
 
 const toggleTodo = async (id: string) => {
@@ -233,14 +311,16 @@ onUnmounted(() => {
         :key="todo.id"
         class="todo-item"
         :class="{ completed: todo.completed }"
+        @click="openEditPanel(todo)"
       >
-        <input
-          type="checkbox"
-          :checked="todo.completed"
-          @change="toggleTodo(todo.id)"
-        />
+        <span @click.stop>
+          <input
+            type="checkbox"
+            :checked="todo.completed"
+            @change="toggleTodo(todo.id)"
+          />
+        </span>
         <span class="todo-text">{{ todo.text }}</span>
-        <button class="delete-btn" @click="deleteTodo(todo.id)">削除</button>
       </div>
 
       <p v-if="todos.length === 0" class="empty-message">
@@ -255,7 +335,11 @@ onUnmounted(() => {
 
     <!-- オーバーレイ -->
     <Transition name="fade">
-      <div v-if="showAddPanel" class="overlay" @click="closeAddPanel"></div>
+      <div
+        v-if="showAddPanel || showEditPanel"
+        class="overlay"
+        @click="showAddPanel ? closeAddPanel() : closeEditPanel()"
+      ></div>
     </Transition>
 
     <!-- 下からスライドするタスク追加パネル -->
@@ -281,6 +365,36 @@ onUnmounted(() => {
         <div class="add-panel-actions">
           <button class="cancel-btn" @click="closeAddPanel">キャンセル</button>
           <button class="add-btn" @click="addTodo" :disabled="newTodoText.trim() === ''">追加</button>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- 下からスライドするタスク編集パネル -->
+    <Transition :name="isEditSwipeClosing ? '' : 'slide-up'">
+      <div
+        v-if="showEditPanel"
+        class="add-panel"
+        :style="editPanelStyle"
+        @touchstart="onEditPanelTouchStart"
+        @touchmove.prevent="onEditPanelTouchMove"
+        @touchend="onEditPanelTouchEnd"
+      >
+        <div class="add-panel-handle"></div>
+        <h2 class="add-panel-title">タスクを編集</h2>
+        <input
+          v-model="editTodoText"
+          type="text"
+          class="add-panel-input"
+          placeholder="タスクを入力..."
+          @keyup.enter="updateTodo"
+          autofocus
+        />
+        <div class="add-panel-actions edit-panel-actions">
+          <button class="delete-btn edit-delete-btn" @click="deleteTodoAndClose">削除</button>
+          <div class="edit-panel-actions-right">
+            <button class="cancel-btn" @click="closeEditPanel">キャンセル</button>
+            <button class="add-btn" @click="updateTodo" :disabled="editTodoText.trim() === ''">保存</button>
+          </div>
         </div>
       </div>
     </Transition>
@@ -422,6 +536,7 @@ onUnmounted(() => {
   border-radius: 10px;
   border: 1px solid rgba(0, 0, 0, 0.07);
   transition: background-color 0.15s, box-shadow 0.15s;
+  cursor: pointer;
 }
 
 .todo-item:hover {
@@ -452,6 +567,20 @@ onUnmounted(() => {
 .delete-btn:hover {
   background-color: #fecaca;
   border-color: transparent;
+}
+
+.edit-panel-actions {
+  justify-content: space-between;
+}
+
+.edit-panel-actions-right {
+  display: flex;
+  gap: 0.75em;
+}
+
+.edit-delete-btn {
+  padding: 0.6em 1.2em;
+  font-size: 1em;
 }
 
 .empty-message {
