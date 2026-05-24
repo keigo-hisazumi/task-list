@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { onAuthStateChanged, signOut, type User } from 'firebase/auth'
 import {
   collection,
@@ -27,6 +27,50 @@ const todos = ref<TodoItem[]>([])
 const newTodoText = ref('')
 const showAddPanel = ref(false)
 const notificationPermission = ref<NotificationPermission | 'unsupported'>('unsupported')
+
+// スワイプキャンセル用
+const panelTranslateY = ref(0)
+const isDragging = ref(false)
+const isSwipeClosing = ref(false)
+let dragStartY = 0
+const SWIPE_CLOSE_THRESHOLD = 100
+
+const addPanelStyle = computed(() => {
+  if (isSwipeClosing.value) {
+    return { transform: 'translateY(100%)', transition: 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)' }
+  }
+  if (isDragging.value) {
+    return { transform: `translateY(${panelTranslateY.value}px)`, transition: 'none' }
+  }
+  return { transform: `translateY(${panelTranslateY.value}px)`, transition: 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)' }
+})
+
+const onPanelTouchStart = (e: TouchEvent) => {
+  dragStartY = e.touches[0].clientY
+  panelTranslateY.value = 0
+  isDragging.value = true
+}
+
+const onPanelTouchMove = (e: TouchEvent) => {
+  if (!isDragging.value) return
+  const delta = e.touches[0].clientY - dragStartY
+  panelTranslateY.value = Math.max(0, delta)
+}
+
+const onPanelTouchEnd = () => {
+  if (panelTranslateY.value > SWIPE_CLOSE_THRESHOLD) {
+    isDragging.value = false
+    isSwipeClosing.value = true
+    setTimeout(() => {
+      isSwipeClosing.value = false
+      panelTranslateY.value = 0
+      closeAddPanel()
+    }, 300)
+  } else {
+    isDragging.value = false
+    nextTick(() => { panelTranslateY.value = 0 })
+  }
+}
 
 
 let unsubscribeTodos: (() => void) | null = null
@@ -107,11 +151,16 @@ const requestNotificationPermission = async () => {
 const openAddPanel = () => {
   showAddPanel.value = true
   newTodoText.value = ''
+  panelTranslateY.value = 0
+  isDragging.value = false
+  isSwipeClosing.value = false
 }
 
 const closeAddPanel = () => {
   showAddPanel.value = false
   newTodoText.value = ''
+  panelTranslateY.value = 0
+  isDragging.value = false
 }
 
 let unsubscribeAuth: (() => void) | null = null
@@ -210,8 +259,15 @@ onUnmounted(() => {
     </Transition>
 
     <!-- 下からスライドするタスク追加パネル -->
-    <Transition name="slide-up">
-      <div v-if="showAddPanel" class="add-panel">
+    <Transition :name="isSwipeClosing ? '' : 'slide-up'">
+      <div
+        v-if="showAddPanel"
+        class="add-panel"
+        :style="addPanelStyle"
+        @touchstart="onPanelTouchStart"
+        @touchmove.prevent="onPanelTouchMove"
+        @touchend="onPanelTouchEnd"
+      >
         <div class="add-panel-handle"></div>
         <h2 class="add-panel-title">タスクを追加</h2>
         <input
