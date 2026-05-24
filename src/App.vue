@@ -91,18 +91,20 @@ const logout = async () => {
   await signOut(auth)
 }
 
-const openAddPanel = async () => {
-  if ('Notification' in window) {
-    if (Notification.permission === 'default') {
-      const result = await Notification.requestPermission()
-      notificationPermission.value = result
-      if (result === 'granted') {
-        updateBadge(incompleteCount.value)
-      }
-    } else {
-      notificationPermission.value = Notification.permission
+const requestNotificationPermission = async () => {
+  if (!('Notification' in window)) return
+  if (Notification.permission === 'default') {
+    const result = await Notification.requestPermission()
+    notificationPermission.value = result
+    if (result === 'granted') {
+      updateBadge(incompleteCount.value)
     }
+  } else {
+    notificationPermission.value = Notification.permission
   }
+}
+
+const openAddPanel = () => {
   showAddPanel.value = true
   newTodoText.value = ''
 }
@@ -118,7 +120,6 @@ onMounted(() => {
   if ('Notification' in window) {
     notificationPermission.value = Notification.permission
   }
-
   unsubscribeAuth = onAuthStateChanged(auth, (user) => {
     currentUser.value = user
     authLoading.value = false
@@ -131,6 +132,7 @@ onMounted(() => {
 
     if (user) {
       subscribeTodos(user.uid)
+      requestNotificationPermission()
     }
   })
 })
