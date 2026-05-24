@@ -26,6 +26,8 @@ const authLoading = ref(true)
 const todos = ref<TodoItem[]>([])
 const newTodoText = ref('')
 const showAddPanel = ref(false)
+const notificationPermission = ref<NotificationPermission | 'unsupported'>('unsupported')
+
 
 let unsubscribeTodos: (() => void) | null = null
 
@@ -45,7 +47,7 @@ const updateBadge = (count: number) => {
   }
 }
 
-watch(incompleteCount, updateBadge)
+watch(incompleteCount, updateBadge, { immediate: true })
 
 const subscribeTodos = (uid: string) => {
   const todosRef = collection(db, 'users', uid, 'todos')
@@ -89,7 +91,18 @@ const logout = async () => {
   await signOut(auth)
 }
 
-const openAddPanel = () => {
+const openAddPanel = async () => {
+  if ('Notification' in window) {
+    if (Notification.permission === 'default') {
+      const result = await Notification.requestPermission()
+      notificationPermission.value = result
+      if (result === 'granted') {
+        updateBadge(incompleteCount.value)
+      }
+    } else {
+      notificationPermission.value = Notification.permission
+    }
+  }
   showAddPanel.value = true
   newTodoText.value = ''
 }
@@ -102,6 +115,10 @@ const closeAddPanel = () => {
 let unsubscribeAuth: (() => void) | null = null
 
 onMounted(() => {
+  if ('Notification' in window) {
+    notificationPermission.value = Notification.permission
+  }
+
   unsubscribeAuth = onAuthStateChanged(auth, (user) => {
     currentUser.value = user
     authLoading.value = false
@@ -151,6 +168,10 @@ onUnmounted(() => {
         <div class="progress-bar-track">
           <div class="progress-bar-fill" :style="{ width: progressPercent + '%' }"></div>
         </div>
+      </div>
+
+      <div v-if="notificationPermission === 'denied'" class="notification-banner">
+        バッジを表示するには、設定 › Safari › 通知 で許可してください
       </div>
     </div>
 
@@ -314,6 +335,16 @@ onUnmounted(() => {
   background: linear-gradient(90deg, #646cff, #a78bfa);
   border-radius: 3px;
   transition: width 0.4s ease;
+}
+
+/* 通知拒否バナー */
+.notification-banner {
+  padding: 0.55em 1.2em;
+  background: #fef9c3;
+  color: #854d0e;
+  font-size: 0.8em;
+  text-align: center;
+  border-top: 1px solid #fde047;
 }
 
 /* タスクリスト */
