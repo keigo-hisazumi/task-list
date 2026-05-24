@@ -28,12 +28,6 @@ const newTodoText = ref('')
 const showAddPanel = ref(false)
 const notificationPermission = ref<NotificationPermission | 'unsupported'>('unsupported')
 
-// Debug info to diagnose badge issues on iOS
-const debugInfo = {
-  notificationApi: 'Notification' in window,
-  badgeApi: 'setAppBadge' in navigator,
-  standalone: window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone === true,
-}
 
 let unsubscribeTodos: (() => void) | null = null
 
@@ -178,14 +172,6 @@ onUnmounted(() => {
 
       <div v-if="notificationPermission === 'denied'" class="notification-banner">
         バッジを表示するには、設定 › Safari › 通知 で許可してください
-      </div>
-
-      <!-- デバッグ表示（一時的） -->
-      <div class="debug-bar">
-        SW: {{ debugInfo.standalone ? '○' : '✗' }} |
-        通知API: {{ debugInfo.notificationApi ? '○' : '✗' }} |
-        許可: {{ notificationPermission }} |
-        バッジAPI: {{ debugInfo.badgeApi ? '○' : '✗' }}
       </div>
     </div>
 
@@ -349,17 +335,6 @@ onUnmounted(() => {
   background: linear-gradient(90deg, #646cff, #a78bfa);
   border-radius: 3px;
   transition: width 0.4s ease;
-}
-
-/* デバッグバー（一時的） */
-.debug-bar {
-  padding: 0.3em 1.2em;
-  background: #f1f5f9;
-  color: #64748b;
-  font-size: 0.72em;
-  font-family: monospace;
-  border-top: 1px solid #e2e8f0;
-  text-align: center;
 }
 
 /* 通知拒否バナー */
