@@ -698,12 +698,13 @@ onUnmounted(() => {
 .close-btn {
   background: none;
   border: none;
-  font-size: 1em;
+  font-size: 1.4em;
   line-height: 1;
   cursor: pointer;
   color: rgba(33, 53, 71, 0.5);
   flex-shrink: 0;
-  padding: 0.2em;
+  padding: 0.1em;
+  justify-self: start;
 }
 
 .close-btn:hover {
