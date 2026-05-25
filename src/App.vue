@@ -369,7 +369,10 @@ onUnmounted(() => {
         @touchend="onPanelTouchEnd"
       >
         <div class="add-panel-handle"></div>
-        <h2 class="add-panel-title">タスクを追加</h2>
+        <div class="add-panel-header">
+          <button class="close-btn" @click="closeAddPanel" aria-label="閉じる">✕</button>
+          <h2 class="add-panel-title">タスクを追加</h2>
+        </div>
         <input
           v-model="newTodoText"
           type="text"
@@ -379,7 +382,6 @@ onUnmounted(() => {
           autofocus
         />
         <div class="add-panel-actions">
-          <button class="cancel-btn" @click="closeAddPanel">キャンセル</button>
           <button class="add-btn" @click="addTodo" :disabled="newTodoText.trim() === ''">追加</button>
         </div>
       </div>
@@ -396,7 +398,10 @@ onUnmounted(() => {
         @touchend="onEditPanelTouchEnd"
       >
         <div class="add-panel-handle"></div>
-        <h2 class="add-panel-title">タスクを編集</h2>
+        <div class="add-panel-header">
+          <button class="close-btn" @click="closeEditPanel" aria-label="閉じる">✕</button>
+          <h2 class="add-panel-title">タスクを編集</h2>
+        </div>
         <input
           v-model="editTodoText"
           type="text"
@@ -407,10 +412,7 @@ onUnmounted(() => {
         />
         <div class="add-panel-actions edit-panel-actions">
           <button class="delete-btn edit-delete-btn" @click="deleteTodoAndClose">削除</button>
-          <div class="edit-panel-actions-right">
-            <button class="cancel-btn" @click="closeEditPanel">キャンセル</button>
-            <button class="add-btn" @click="updateTodo" :disabled="editTodoText.trim() === ''">保存</button>
-          </div>
+          <button class="add-btn" @click="updateTodo" :disabled="editTodoText.trim() === ''">保存</button>
         </div>
       </div>
     </Transition>
@@ -612,11 +614,6 @@ onUnmounted(() => {
   justify-content: space-between;
 }
 
-.edit-panel-actions-right {
-  display: flex;
-  gap: 0.75em;
-}
-
 .edit-delete-btn {
   padding: 0.6em 1.2em;
   font-size: 1em;
@@ -691,10 +688,34 @@ onUnmounted(() => {
   margin: 0 auto 1.2em;
 }
 
+.add-panel-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  margin-bottom: 1em;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.4em;
+  line-height: 1;
+  cursor: pointer;
+  color: rgba(33, 53, 71, 0.5);
+  flex-shrink: 0;
+  padding: 0.1em;
+  justify-self: start;
+}
+
+.close-btn:hover {
+  color: #213547;
+  border-color: transparent;
+}
+
 .add-panel-title {
   font-size: 1.1em;
-  margin: 0 0 1em;
-  text-align: left;
+  margin: 0;
+  text-align: center;
   color: #213547;
 }
 
@@ -720,20 +741,6 @@ onUnmounted(() => {
   display: flex;
   gap: 0.75em;
   justify-content: flex-end;
-}
-
-.cancel-btn {
-  background: transparent;
-  border: 1px solid rgba(0, 0, 0, 0.18);
-  padding: 0.6em 1.2em;
-  border-radius: 8px;
-  cursor: pointer;
-  color: #213547;
-}
-
-.cancel-btn:hover {
-  background: rgba(0, 0, 0, 0.04);
-  border-color: rgba(0, 0, 0, 0.3);
 }
 
 .add-btn {
