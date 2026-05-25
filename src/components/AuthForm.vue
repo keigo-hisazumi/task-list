@@ -164,7 +164,7 @@ input {
 .link-btn {
   background: none;
   border: none;
-  color: #646cff;
+  color: #667eea;
   cursor: pointer;
   font-size: inherit;
   padding: 0;
@@ -172,7 +172,7 @@ input {
 }
 
 .link-btn:hover {
-  color: #535bf2;
+  color: #5a6fd6;
 }
 
 @media (prefers-color-scheme: light) {
