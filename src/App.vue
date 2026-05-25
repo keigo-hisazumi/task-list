@@ -552,7 +552,7 @@ onUnmounted(() => {
 
 .progress-bar-fill {
   height: 100%;
-  background: #646cff;
+  background: #667eea;
   border-radius: 3px;
   transition: width 0.4s ease;
 }
@@ -589,7 +589,7 @@ onUnmounted(() => {
 
 .todo-item:hover {
   background-color: #f8f8ff;
-  box-shadow: 0 1px 6px rgba(100, 108, 255, 0.1);
+  box-shadow: 0 1px 6px rgba(102, 126, 234, 0.1);
 }
 
 .todo-item.completed .todo-text {
@@ -641,9 +641,9 @@ onUnmounted(() => {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: #646cff;
+  background: #667eea;
   border: none;
-  box-shadow: 0 4px 16px rgba(100, 108, 255, 0.4);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -655,7 +655,7 @@ onUnmounted(() => {
 
 .fab:hover {
   transform: scale(1.1);
-  box-shadow: 0 6px 20px rgba(100, 108, 255, 0.55);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.55);
   border-color: transparent;
 }
 
@@ -741,7 +741,7 @@ onUnmounted(() => {
 
 .add-panel-input:focus {
   outline: none;
-  border-color: #646cff;
+  border-color: #667eea;
   background-color: #ffffff;
 }
 
@@ -752,7 +752,7 @@ onUnmounted(() => {
 }
 
 .add-btn {
-  background: #646cff;
+  background: #667eea;
   border: none;
   padding: 0.6em 1.5em;
   border-radius: 8px;
