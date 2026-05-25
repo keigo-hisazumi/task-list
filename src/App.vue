@@ -545,7 +545,7 @@ onUnmounted(() => {
 
 .progress-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #646cff, #a78bfa);
+  background: #646cff;
   border-radius: 3px;
   transition: width 0.4s ease;
 }
@@ -634,7 +634,7 @@ onUnmounted(() => {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #646cff, #a78bfa);
+  background: #646cff;
   border: none;
   box-shadow: 0 4px 16px rgba(100, 108, 255, 0.4);
   display: flex;
@@ -744,7 +744,7 @@ onUnmounted(() => {
 }
 
 .add-btn {
-  background: linear-gradient(135deg, #646cff, #a78bfa);
+  background: #646cff;
   border: none;
   padding: 0.6em 1.5em;
   border-radius: 8px;
