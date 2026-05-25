@@ -1,0 +1,22 @@
+{
+  "name": "Todoリスト",
+  "short_name": "Todo",
+  "description": "シンプルなタスク管理アプリ",
+  "start_url": "/task-list/pr-19/",
+  "scope": "/task-list/pr-19/",
+  "display": "standalone",
+  "background_color": "#4f46e5",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "/task-list/pr-19/pwa-icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/task-list/pr-19/pwa-icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
