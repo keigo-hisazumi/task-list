@@ -38,12 +38,15 @@ let dragStartY = 0
 
 const addPanelStyle = computed(() => {
   if (isSwipeClosing.value) {
-    return { transform: 'translateY(100%)', transition: 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)' }
+    return { transform: 'translateY(100%)' }
   }
   if (isDragging.value) {
     return { transform: `translateY(${panelTranslateY.value}px)`, transition: 'none' }
   }
-  return { transform: `translateY(${panelTranslateY.value}px)`, transition: 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)' }
+  if (panelTranslateY.value > 0) {
+    return { transform: `translateY(${panelTranslateY.value}px)` }
+  }
+  return {}
 })
 
 const onPanelTouchStart = (e: TouchEvent) => {
@@ -84,12 +87,15 @@ let editDragStartY = 0
 
 const editPanelStyle = computed(() => {
   if (isEditSwipeClosing.value) {
-    return { transform: 'translateY(100%)', transition: 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)' }
+    return { transform: 'translateY(100%)' }
   }
   if (isEditDragging.value) {
     return { transform: `translateY(${editPanelTranslateY.value}px)`, transition: 'none' }
   }
-  return { transform: `translateY(${editPanelTranslateY.value}px)`, transition: 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)' }
+  if (editPanelTranslateY.value > 0) {
+    return { transform: `translateY(${editPanelTranslateY.value}px)` }
+  }
+  return {}
 })
 
 const onEditPanelTouchStart = (e: TouchEvent) => {
@@ -154,13 +160,13 @@ const subscribeTodos = (uid: string) => {
 
 const addTodo = async () => {
   if (!currentUser.value || newTodoText.value.trim() === '') return
+  const text = newTodoText.value.trim()
+  closeAddPanel()
   await addDoc(collection(db, 'users', currentUser.value.uid, 'todos'), {
-    text: newTodoText.value.trim(),
+    text,
     completed: false,
     createdAt: serverTimestamp(),
   })
-  newTodoText.value = ''
-  showAddPanel.value = false
 }
 
 const deleteTodo = async (id: string) => {
@@ -187,16 +193,17 @@ const closeEditPanel = () => {
 
 const updateTodo = async () => {
   if (!currentUser.value || !editingTodo.value || editTodoText.value.trim() === '') return
-  await updateDoc(doc(db, 'users', currentUser.value.uid, 'todos', editingTodo.value.id), {
-    text: editTodoText.value.trim(),
-  })
+  const id = editingTodo.value.id
+  const text = editTodoText.value.trim()
   closeEditPanel()
+  await updateDoc(doc(db, 'users', currentUser.value.uid, 'todos', id), { text })
 }
 
 const deleteTodoAndClose = async () => {
   if (!currentUser.value || !editingTodo.value) return
-  await deleteTodo(editingTodo.value.id)
+  const id = editingTodo.value.id
   closeEditPanel()
+  await deleteTodo(id)
 }
 
 const deleteCompletedTodos = async () => {
@@ -352,7 +359,7 @@ onUnmounted(() => {
     <!-- オーバーレイ -->
     <Transition name="fade">
       <div
-        v-if="showAddPanel || showEditPanel"
+        v-if="(showAddPanel || showEditPanel) && !isSwipeClosing && !isEditSwipeClosing"
         class="overlay"
         @click="showAddPanel ? closeAddPanel() : closeEditPanel()"
       ></div>
@@ -678,6 +685,7 @@ onUnmounted(() => {
   padding: 1em 1.5em 2em;
   z-index: 40;
   box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.12);
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 .add-panel-handle {
@@ -777,7 +785,7 @@ onUnmounted(() => {
 /* フェードトランジション */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.25s ease;
+  transition: opacity 0.3s ease;
 }
 
 .fade-enter-from,
