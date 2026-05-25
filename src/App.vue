@@ -160,13 +160,13 @@ const subscribeTodos = (uid: string) => {
 
 const addTodo = async () => {
   if (!currentUser.value || newTodoText.value.trim() === '') return
+  const text = newTodoText.value.trim()
+  closeAddPanel()
   await addDoc(collection(db, 'users', currentUser.value.uid, 'todos'), {
-    text: newTodoText.value.trim(),
+    text,
     completed: false,
     createdAt: serverTimestamp(),
   })
-  newTodoText.value = ''
-  showAddPanel.value = false
 }
 
 const deleteTodo = async (id: string) => {
@@ -193,16 +193,17 @@ const closeEditPanel = () => {
 
 const updateTodo = async () => {
   if (!currentUser.value || !editingTodo.value || editTodoText.value.trim() === '') return
-  await updateDoc(doc(db, 'users', currentUser.value.uid, 'todos', editingTodo.value.id), {
-    text: editTodoText.value.trim(),
-  })
+  const id = editingTodo.value.id
+  const text = editTodoText.value.trim()
   closeEditPanel()
+  await updateDoc(doc(db, 'users', currentUser.value.uid, 'todos', id), { text })
 }
 
 const deleteTodoAndClose = async () => {
   if (!currentUser.value || !editingTodo.value) return
-  await deleteTodo(editingTodo.value.id)
+  const id = editingTodo.value.id
   closeEditPanel()
+  await deleteTodo(id)
 }
 
 const deleteCompletedTodos = async () => {
