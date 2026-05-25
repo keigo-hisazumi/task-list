@@ -689,31 +689,24 @@ onUnmounted(() => {
 }
 
 .add-panel-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 0.5em;
   margin-bottom: 1em;
 }
 
 .close-btn {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.08);
+  background: none;
   border: none;
-  font-size: 0.85em;
+  font-size: 1em;
   line-height: 1;
   cursor: pointer;
-  color: rgba(33, 53, 71, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  color: rgba(33, 53, 71, 0.5);
   flex-shrink: 0;
-  padding: 0;
+  padding: 0.2em;
 }
 
 .close-btn:hover {
-  background: rgba(0, 0, 0, 0.14);
   color: #213547;
   border-color: transparent;
 }
@@ -721,7 +714,7 @@ onUnmounted(() => {
 .add-panel-title {
   font-size: 1.1em;
   margin: 0;
-  text-align: left;
+  text-align: center;
   color: #213547;
 }
 
