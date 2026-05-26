@@ -24,6 +24,24 @@ interface TodoItem {
 const currentUser = ref<User | null>(null)
 const authLoading = ref(true)
 const todos = ref<TodoItem[]>([])
+const todosLoading = ref(false)
+
+const TODOS_CACHE_KEY = (uid: string) => `todos_cache_${uid}`
+
+const loadCachedTodos = (uid: string): TodoItem[] => {
+  try {
+    const raw = localStorage.getItem(TODOS_CACHE_KEY(uid))
+    return raw ? (JSON.parse(raw) as TodoItem[]) : []
+  } catch {
+    return []
+  }
+}
+
+const saveCachedTodos = (uid: string, items: TodoItem[]) => {
+  try {
+    localStorage.setItem(TODOS_CACHE_KEY(uid), JSON.stringify(items))
+  } catch { /* ignore */ }
+}
 const newTodoText = ref('')
 const showAddPanel = ref(false)
 const notificationPermission = ref<NotificationPermission | 'unsupported'>('unsupported')
@@ -147,6 +165,13 @@ const updateBadge = (count: number) => {
 watch(incompleteCount, updateBadge, { immediate: true })
 
 const subscribeTodos = (uid: string) => {
+  // サーバー応答前にキャッシュを即時表示
+  const cached = loadCachedTodos(uid)
+  if (cached.length > 0) {
+    todos.value = cached
+  }
+  todosLoading.value = true
+
   const todosRef = collection(db, 'users', uid, 'todos')
   const q = query(todosRef, orderBy('createdAt', 'asc'))
   unsubscribeTodos = onSnapshot(q, (snapshot) => {
@@ -155,6 +180,8 @@ const subscribeTodos = (uid: string) => {
       text: doc.data().text as string,
       completed: doc.data().completed as boolean,
     }))
+    todosLoading.value = false
+    saveCachedTodos(uid, todos.value)
   })
 }
 
@@ -290,6 +317,7 @@ onMounted(() => {
       unsubscribeTodos()
       unsubscribeTodos = null
       todos.value = []
+      todosLoading.value = false
     }
 
     if (user) {
@@ -386,7 +414,7 @@ onUnmounted(() => {
         <span class="todo-text">{{ todo.text }}</span>
       </div>
 
-      <p v-if="todos.length === 0" class="empty-message">
+      <p v-if="todos.length === 0 && !todosLoading" class="empty-message">
         タスクがありません。＋ボタンで追加してください。
       </p>
     </div>
