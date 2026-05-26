@@ -1,58 +1,10 @@
-<script setup lang="ts">
-import { ref } from 'vue'
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword
-} from 'firebase/auth'
-import { auth } from '../firebase'
-
-const email = ref('')
-const password = ref('')
-const isLogin = ref(true)
-const errorMessage = ref('')
-const loading = ref(false)
-
-const submit = async () => {
-  if (!email.value || !password.value) return
-
-  loading.value = true
-  errorMessage.value = ''
-
-  try {
-    if (isLogin.value) {
-      await signInWithEmailAndPassword(auth, email.value, password.value)
-    } else {
-      await createUserWithEmailAndPassword(auth, email.value, password.value)
-    }
-  } catch (err: unknown) {
-    const code = (err as { code?: string }).code ?? ''
-    errorMessage.value = getErrorMessage(code)
-  } finally {
-    loading.value = false
-  }
-}
-
-const getErrorMessage = (code: string): string => {
-  const messages: Record<string, string> = {
-    'auth/user-not-found': 'メールアドレスが見つかりません',
-    'auth/wrong-password': 'パスワードが正しくありません',
-    'auth/invalid-credential': 'メールアドレスまたはパスワードが正しくありません',
-    'auth/email-already-in-use': 'このメールアドレスは既に使用されています',
-    'auth/weak-password': 'パスワードは6文字以上にしてください',
-    'auth/invalid-email': 'メールアドレスの形式が正しくありません',
-    'auth/too-many-requests': 'ログイン試行が多すぎます。しばらく後に再試行してください',
-  }
-  return messages[code] ?? 'エラーが発生しました。再試行してください'
-}
-</script>
-
 <template>
-  <div class="auth-container">
-    <div class="auth-card">
-      <h1>📝 Todoリスト</h1>
-      <h2>{{ isLogin ? 'ログイン' : 'アカウント作成' }}</h2>
+  <div class="login-page">
+    <div class="login-card">
+      <h1 class="app-title">Todoリスト</h1>
+      <h2 class="form-title">{{ isLogin ? 'ログイン' : '新規登録' }}</h2>
 
-      <form @submit.prevent="submit">
+      <form @submit.prevent="submit" class="login-form">
         <div class="form-group">
           <label for="email">メールアドレス</label>
           <input
@@ -74,111 +26,210 @@ const getErrorMessage = (code: string): string => {
             placeholder="6文字以上"
             required
             autocomplete="current-password"
+            minlength="6"
           />
         </div>
 
         <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
 
-        <button type="submit" :disabled="loading" class="submit-btn">
-          {{ loading ? '処理中...' : (isLogin ? 'ログイン' : '登録') }}
+        <button type="submit" class="btn-submit" :disabled="loading">
+          <span v-if="loading" class="loading-spinner"></span>
+          {{ isLogin ? 'ログイン' : '登録する' }}
         </button>
       </form>
 
-      <p class="toggle-text">
-        {{ isLogin ? 'アカウントをお持ちでない方は' : 'すでにアカウントをお持ちの方は' }}
-        <button class="link-btn" @click="isLogin = !isLogin; errorMessage = ''">
-          {{ isLogin ? '新規登録' : 'ログイン' }}
-        </button>
-      </p>
+      <button @click="toggleMode" class="btn-toggle">
+        {{ isLogin ? 'アカウントをお持ちでない方はこちら' : 'すでにアカウントをお持ちの方はこちら' }}
+      </button>
     </div>
   </div>
 </template>
 
-<style scoped>
-.auth-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  padding: 1em;
+<script setup lang="ts">
+import { ref } from 'vue'
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword
+} from 'firebase/auth'
+import { auth } from '../firebase'
+
+const email = ref('')
+const password = ref('')
+const isLogin = ref(true)
+const errorMessage = ref('')
+const loading = ref(false)
+
+function toggleMode() {
+  isLogin.value = !isLogin.value
+  errorMessage.value = ''
 }
 
-.auth-card {
+const submit = async () => {
+  errorMessage.value = ''
+  loading.value = true
+
+  try {
+    if (isLogin.value) {
+      await signInWithEmailAndPassword(auth, email.value, password.value)
+    } else {
+      await createUserWithEmailAndPassword(auth, email.value, password.value)
+    }
+  } catch (err: unknown) {
+    const code = (err as { code?: string }).code ?? ''
+    errorMessage.value = getErrorMessage(code)
+  } finally {
+    loading.value = false
+  }
+}
+
+const getErrorMessage = (code: string): string => {
+  const messages: Record<string, string> = {
+    'auth/user-not-found': 'メールアドレスまたはパスワードが正しくありません',
+    'auth/wrong-password': 'メールアドレスまたはパスワードが正しくありません',
+    'auth/invalid-credential': 'メールアドレスまたはパスワードが正しくありません',
+    'auth/email-already-in-use': 'このメールアドレスはすでに使用されています',
+    'auth/weak-password': 'パスワードは6文字以上にしてください',
+    'auth/invalid-email': 'メールアドレスの形式が正しくありません',
+    'auth/too-many-requests': 'しばらくしてから再度お試しください',
+  }
+  return messages[code] ?? 'エラーが発生しました。もう一度お試しください'
+}
+</script>
+
+<style scoped>
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding: 1rem;
+}
+
+.login-card {
+  background: white;
+  border-radius: 12px;
+  padding: 2.5rem;
   width: 100%;
   max-width: 400px;
-  padding: 2em;
-  background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
 }
 
-h1 {
-  font-size: 2em;
-  margin-bottom: 0.2em;
+.app-title {
+  text-align: center;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #667eea;
+  margin-bottom: 0.25rem;
 }
 
-h2 {
-  font-size: 1.2em;
-  font-weight: normal;
-  margin-bottom: 1.5em;
-  opacity: 0.7;
+.form-title {
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #555;
+  margin-bottom: 2rem;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.4em;
-  margin-bottom: 1em;
+  gap: 0.5rem;
 }
 
-label {
-  font-size: 0.9em;
-  opacity: 0.8;
+.form-group label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #444;
 }
 
-input {
+.form-group input {
+  padding: 0.75rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
   width: 100%;
   box-sizing: border-box;
 }
 
+.form-group input:focus {
+  border-color: #667eea;
+}
+
 .error-message {
-  color: #ff6b6b;
-  font-size: 0.9em;
-  margin: 0.5em 0;
-}
-
-.submit-btn {
-  width: 100%;
-  margin-top: 0.5em;
-  padding: 0.8em;
-  font-size: 1em;
-}
-
-.toggle-text {
-  margin-top: 1.5em;
-  font-size: 0.9em;
-  opacity: 0.7;
+  font-size: 0.875rem;
+  color: #e53935;
   text-align: center;
+  padding: 0.5rem;
+  background: #ffebee;
+  border-radius: 6px;
+  margin: 0;
 }
 
-.link-btn {
-  background: none;
+.btn-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 0.5rem;
+  width: 100%;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background: #5a6fd6;
+}
+
+.btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.loading-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.btn-toggle {
+  display: block;
+  width: 100%;
+  margin-top: 1.25rem;
+  padding: 0.5rem;
+  background: transparent;
   border: none;
   color: #667eea;
+  font-size: 0.875rem;
   cursor: pointer;
-  font-size: inherit;
-  padding: 0;
+  text-align: center;
   text-decoration: underline;
 }
 
-.link-btn:hover {
+.btn-toggle:hover {
   color: #5a6fd6;
-}
-
-@media (prefers-color-scheme: light) {
-  .auth-card {
-    background-color: rgba(0, 0, 0, 0.03);
-    border-color: rgba(0, 0, 0, 0.1);
-  }
 }
 </style>
