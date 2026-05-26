@@ -230,6 +230,7 @@ const logout = async () => {
 }
 
 const showMenu = ref(false)
+const menuRef = ref<HTMLElement | null>(null)
 
 const toggleMenu = () => {
   showMenu.value = !showMenu.value
@@ -237,6 +238,12 @@ const toggleMenu = () => {
 
 const closeMenu = () => {
   showMenu.value = false
+}
+
+const handleDocumentClick = (e: MouseEvent) => {
+  if (menuRef.value && !menuRef.value.contains(e.target as Node)) {
+    closeMenu()
+  }
 }
 
 
@@ -271,6 +278,7 @@ const closeAddPanel = () => {
 let unsubscribeAuth: (() => void) | null = null
 
 onMounted(() => {
+  document.addEventListener('click', handleDocumentClick)
   if ('Notification' in window) {
     notificationPermission.value = Notification.permission
   }
@@ -292,6 +300,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  document.removeEventListener('click', handleDocumentClick)
   unsubscribeAuth?.()
   unsubscribeTodos?.()
   if ('clearAppBadge' in navigator) navigator.clearAppBadge()
@@ -310,7 +319,7 @@ onUnmounted(() => {
     <div class="sticky-top">
       <header class="app-header">
         <h1>Todoリスト</h1>
-        <div class="hamburger-menu">
+        <div class="hamburger-menu" ref="menuRef">
           <button class="hamburger-btn" @click="toggleMenu" aria-label="メニューを開く" :aria-expanded="showMenu">
             <span class="hamburger-line"></span>
             <span class="hamburger-line"></span>
@@ -390,8 +399,6 @@ onUnmounted(() => {
       ></div>
     </Transition>
 
-    <!-- メニューオーバーレイ（タップで閉じる） -->
-    <div v-if="showMenu" class="menu-overlay" @click="closeMenu"></div>
 
     <!-- 下からスライドするタスク追加パネル -->
     <Transition :name="isSwipeClosing ? '' : 'slide-up'">
@@ -601,11 +608,6 @@ onUnmounted(() => {
   border-color: transparent;
 }
 
-.menu-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 45;
-}
 
 .menu-fade-enter-active,
 .menu-fade-leave-active {
