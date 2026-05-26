@@ -508,7 +508,6 @@ onUnmounted(() => {
   align-items: center;
   padding: 0.75em 1.2em;
   gap: 0.5em;
-  overflow: hidden;
 }
 
 .app-header h1 {
