@@ -331,7 +331,14 @@ onUnmounted(() => {
                 <span class="menu-account-email">{{ currentUser.email }}</span>
               </div>
               <div class="menu-divider"></div>
-              <button class="menu-logout-btn" @click="logout">ログアウト</button>
+              <button class="menu-logout-btn" @click="logout">
+                <svg class="menu-logout-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                  <polyline points="16 17 21 12 16 7"/>
+                  <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                ログアウト
+              </button>
             </div>
           </Transition>
         </div>
@@ -586,6 +593,9 @@ onUnmounted(() => {
 
 .menu-logout-btn {
   width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
   text-align: left;
   background: none;
   border: none;
@@ -600,6 +610,11 @@ onUnmounted(() => {
   border-color: transparent;
 }
 
+.menu-logout-icon {
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+}
 
 .menu-fade-enter-active,
 .menu-fade-leave-active {
