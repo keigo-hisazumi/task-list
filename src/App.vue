@@ -288,7 +288,7 @@ onUnmounted(() => {
 
 <template>
   <div v-if="authLoading" class="loading-screen">
-    <p>読み込み中...</p>
+    <div class="loading-spinner"></div>
   </div>
 
   <AuthForm v-else-if="!currentUser" />
@@ -432,7 +432,19 @@ onUnmounted(() => {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  opacity: 0.6;
+}
+
+.loading-spinner {
+  width: 44px;
+  height: 44px;
+  border: 4px solid rgba(102, 126, 234, 0.2);
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .todo-app {
