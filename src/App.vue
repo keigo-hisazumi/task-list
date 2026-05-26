@@ -225,8 +225,27 @@ const toggleTodo = async (id: string) => {
 }
 
 const logout = async () => {
+  showMenu.value = false
   await signOut(auth)
 }
+
+const showMenu = ref(false)
+const menuRef = ref<HTMLElement | null>(null)
+
+const toggleMenu = () => {
+  showMenu.value = !showMenu.value
+}
+
+const closeMenu = () => {
+  showMenu.value = false
+}
+
+const handleDocumentClick = (e: MouseEvent) => {
+  if (menuRef.value && !menuRef.value.contains(e.target as Node)) {
+    closeMenu()
+  }
+}
+
 
 const requestNotificationPermission = async () => {
   if (!('Notification' in window)) return
@@ -259,6 +278,7 @@ const closeAddPanel = () => {
 let unsubscribeAuth: (() => void) | null = null
 
 onMounted(() => {
+  document.addEventListener('click', handleDocumentClick)
   if ('Notification' in window) {
     notificationPermission.value = Notification.permission
   }
@@ -280,6 +300,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  document.removeEventListener('click', handleDocumentClick)
   unsubscribeAuth?.()
   unsubscribeTodos?.()
   if ('clearAppBadge' in navigator) navigator.clearAppBadge()
@@ -298,9 +319,28 @@ onUnmounted(() => {
     <div class="sticky-top">
       <header class="app-header">
         <h1>Todoリスト</h1>
-        <div class="user-info">
-          <span class="user-email">{{ currentUser.email }}</span>
-          <button class="logout-btn" @click="logout">ログアウト</button>
+        <div class="hamburger-menu" ref="menuRef">
+          <button class="hamburger-btn" @click="toggleMenu" aria-label="メニューを開く" :aria-expanded="showMenu">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+          </button>
+          <Transition name="menu-fade">
+            <div v-if="showMenu" class="menu-dropdown">
+              <div class="menu-account">
+                <span class="menu-account-email">{{ currentUser.email }}</span>
+              </div>
+              <div class="menu-divider"></div>
+              <button class="menu-logout-btn" @click="logout">
+                <svg class="menu-logout-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                  <polyline points="16 17 21 12 16 7"/>
+                  <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                ログアウト
+              </button>
+            </div>
+          </Transition>
         </div>
       </header>
 
@@ -364,6 +404,7 @@ onUnmounted(() => {
         @click="showAddPanel ? closeAddPanel() : closeEditPanel()"
       ></div>
     </Transition>
+
 
     <!-- 下からスライドするタスク追加パネル -->
     <Transition :name="isSwipeClosing ? '' : 'slide-up'">
@@ -473,7 +514,6 @@ onUnmounted(() => {
   align-items: center;
   padding: 0.75em 1.2em;
   gap: 0.5em;
-  overflow: hidden;
 }
 
 .app-header h1 {
@@ -485,36 +525,106 @@ onUnmounted(() => {
   flex-shrink: 1;
 }
 
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 0.6em;
+.hamburger-menu {
+  position: relative;
   flex-shrink: 0;
 }
 
-.user-email {
-  font-size: 0.78em;
-  color: rgba(33, 53, 71, 0.55);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 160px;
-}
-
-.logout-btn {
-  background-color: transparent;
-  border: 1px solid rgba(33, 53, 71, 0.2);
-  padding: 0.3em 0.65em;
-  font-size: 0.78em;
-  border-radius: 6px;
+.hamburger-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: none;
   cursor: pointer;
-  color: #213547;
-  white-space: nowrap;
+  padding: 0.4em;
+  border-radius: 8px;
 }
 
-.logout-btn:hover {
-  background-color: rgba(33, 53, 71, 0.05);
-  border-color: rgba(33, 53, 71, 0.35);
+.hamburger-btn:hover {
+  background-color: rgba(33, 53, 71, 0.06);
+  border-color: transparent;
+}
+
+.hamburger-line {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background-color: #213547;
+  border-radius: 2px;
+}
+
+.menu-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  min-width: 220px;
+  z-index: 50;
+  overflow: hidden;
+}
+
+.menu-account {
+  padding: 0.9em 1em;
+}
+
+.menu-account-email {
+  display: block;
+  font-size: 0.88em;
+  color: #213547;
+  word-break: break-all;
+  text-align: left;
+  pointer-events: none;
+  user-select: text;
+}
+
+.menu-divider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.08);
+  margin: 0;
+}
+
+.menu-logout-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0.85em 1em;
+  font-size: 0.9em;
+  color: #dc2626;
+  cursor: pointer;
+}
+
+.menu-logout-btn:hover {
+  background-color: #fee2e2;
+  border-color: transparent;
+}
+
+.menu-logout-icon {
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+}
+
+.menu-fade-enter-active,
+.menu-fade-leave-active {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.menu-fade-enter-from,
+.menu-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
 }
 
 /* 進捗セクション */
