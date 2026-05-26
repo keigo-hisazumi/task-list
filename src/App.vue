@@ -328,7 +328,6 @@ onUnmounted(() => {
           <Transition name="menu-fade">
             <div v-if="showMenu" class="menu-dropdown">
               <div class="menu-account">
-                <span class="menu-account-label">アカウント</span>
                 <span class="menu-account-email">{{ currentUser.email }}</span>
               </div>
               <div class="menu-divider"></div>
@@ -567,22 +566,16 @@ onUnmounted(() => {
 
 .menu-account {
   padding: 0.9em 1em;
-  display: flex;
-  flex-direction: column;
-  gap: 0.2em;
-}
-
-.menu-account-label {
-  font-size: 0.72em;
-  color: rgba(33, 53, 71, 0.45);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
 }
 
 .menu-account-email {
+  display: block;
   font-size: 0.88em;
   color: #213547;
   word-break: break-all;
+  text-align: left;
+  pointer-events: none;
+  user-select: text;
 }
 
 .menu-divider {
