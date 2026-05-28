@@ -1,4 +1,4 @@
-name: GitHub Pagesへのデプロイ
+name: Deploy to GitHub Pages
 
 on:
   push:
@@ -10,33 +10,34 @@ permissions:
   contents: write
 
 concurrency:
-  group: "pages"
+  group: pages
   cancel-in-progress: false
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: リポジトリのチェックアウト
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Node.jsのセットアップ
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
-      - name: 依存関係のインストール
+      - name: Install dependencies
         run: npm ci
 
-      - name: ビルド
+      - name: Build
         run: npm run build
+        env:
+          NODE_ENV: production
 
-      - name: .nojekyllファイルの作成
-        run: touch dist/.nojekyll
-
-      - name: GitHub Pagesへのデプロイ
-        uses: JamesIves/github-pages-deploy-action@v4
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          folder: dist
-          clean-exclude: pr-preview
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          keep_files: true
+          exclude_assets: 'pr-*'
