@@ -1,19 +1,16 @@
 import { fileURLToPath, URL } from 'node:url'
 
 import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
+import react from '@vitejs/plugin-react'
 import { writeFileSync } from 'fs'
 import { join } from 'path'
 
 const base = process.env.VITE_BASE_PATH ?? '/task-list/'
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    vue(),
+    react(),
     {
-      // Rewrite manifest.json with the correct start_url/scope for each deployment
-      // (PR previews use a different base path than the production app)
       name: 'generate-manifest',
       apply: 'build',
       writeBundle(options) {
