@@ -389,7 +389,6 @@ export default function App() {
             type="text"
             className="add-panel-input"
             placeholder="新しいタスクを入力..."
-            onKeyUp={e => e.key === 'Enter' && addTodo()}
             autoFocus
           />
           <div className="add-panel-actions">
