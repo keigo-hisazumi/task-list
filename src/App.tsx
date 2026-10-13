@@ -106,19 +106,37 @@ export default function App() {
   const incompleteCount = todos.filter(t => !t.completed).length
   const progressPercent = todos.length === 0 ? 0 : Math.round((completedCount / todos.length) * 100)
 
+  // タスクを読み込む前の 0 件でバッジを消してしまわないよう、読み込み完了後にのみ更新する
+  const [badgeReady, setBadgeReady] = useState(false)
+
   const updateBadge = useCallback((count: number) => {
     if ('setAppBadge' in navigator) {
-      if (count > 0) {
-        navigator.setAppBadge(count)
-      } else {
-        navigator.clearAppBadge()
-      }
+      const p = count > 0 ? navigator.setAppBadge(count) : navigator.clearAppBadge()
+      p.catch(() => { /* ignore */ })
+    }
+    // iOS ではページ側で設定したバッジがバックグラウンドで消えることがあるため Service Worker からも設定する
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready
+        .then(reg => reg.active?.postMessage({ type: 'SET_BADGE', count }))
+        .catch(() => { /* ignore */ })
     }
   }, [])
 
   useEffect(() => {
+    if (!badgeReady) return
     updateBadge(incompleteCount)
-  }, [incompleteCount, updateBadge])
+
+    // バックグラウンドへ移行する直前にもバッジを再設定する
+    const handleHide = () => {
+      if (document.visibilityState === 'hidden') updateBadge(incompleteCount)
+    }
+    document.addEventListener('visibilitychange', handleHide)
+    window.addEventListener('pagehide', handleHide)
+    return () => {
+      document.removeEventListener('visibilitychange', handleHide)
+      window.removeEventListener('pagehide', handleHide)
+    }
+  }, [badgeReady, incompleteCount, updateBadge])
 
   const closeAddPanel = useCallback(() => {
     setShowAddPanel(false)
@@ -162,11 +180,15 @@ export default function App() {
         unsubscribeTodos = null
         setTodos([])
         setTodosLoading(false)
+        setBadgeReady(false)
       }
 
       if (user) {
         const cached = loadCachedTodos(user.uid)
-        if (cached.length > 0) setTodos(cached)
+        if (cached.length > 0) {
+          setTodos(cached)
+          setBadgeReady(true)
+        }
         setTodosLoading(true)
 
         const todosRef = collection(db, 'users', user.uid, 'todos')
@@ -179,6 +201,7 @@ export default function App() {
           }))
           setTodos(items)
           setTodosLoading(false)
+          setBadgeReady(true)
           saveCachedTodos(user.uid, items)
         })
 
@@ -193,7 +216,6 @@ export default function App() {
     return () => {
       unsubscribeAuth()
       unsubscribeTodos?.()
-      if ('clearAppBadge' in navigator) navigator.clearAppBadge()
     }
   }, [])
 
@@ -254,6 +276,7 @@ export default function App() {
 
   const logout = async () => {
     setShowMenu(false)
+    updateBadge(0)
     await signOut(auth)
   }
 
