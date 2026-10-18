@@ -40,7 +40,7 @@ npm install
 npm run dev
 ```
 
-ブラウザで http://localhost:5173/ にアクセスしてください。
+ブラウザで <http://localhost:5173/> にアクセスしてください。
 
 ### プロダクションビルド
 
@@ -72,7 +72,7 @@ GitHub Actionsの[ワークフロー](https://github.com/keigo-hisazumi/task-lis
 
 ## プロジェクト構造
 
-```
+```text
 task-list/
 ├── src/
 │   ├── App.vue          # メインのTodoリストコンポーネント
