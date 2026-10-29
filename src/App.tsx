@@ -39,6 +39,13 @@ const saveCachedTodos = (uid: string, items: TodoItem[]) => {
   } catch { /* ignore */ }
 }
 
+// 共用の端末で次の人に見えないよう、ログアウト時にキャッシュを消す
+const clearCachedTodos = (uid: string) => {
+  try {
+    localStorage.removeItem(TODOS_CACHE_KEY(uid))
+  } catch { /* ignore */ }
+}
+
 function usePanelSwipe(onClose: () => void) {
   const [translateY, setTranslateY] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
@@ -277,6 +284,7 @@ export default function App() {
   const logout = async () => {
     setShowMenu(false)
     updateBadge(0)
+    if (currentUser) clearCachedTodos(currentUser.uid)
     await signOut(auth)
   }
 
