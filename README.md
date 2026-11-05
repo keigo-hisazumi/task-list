@@ -1,8 +1,8 @@
 # Todoリスト
 
-シンプルな Todo リストアプリです。メールアドレスでログインすると、タスクが Firebase（Firestore）に保存されて端末間で同期されます。
+シンプルな Todo リストアプリです。タスクの追加・編集・完了の切り替えと、完了率などの進捗を確認できます。
 
-公開 URL: <https://keigo-hisazumi.github.io/task-list/>
+**公開 URL**: <https://keigo-hisazumi.github.io/task-list/>
 
 ## 主な機能
 
