@@ -64,11 +64,10 @@ src/
   components/         ログイン / 新規登録フォーム
   firebase.ts         Firebase の初期化
   style.css           スタイル
-public/               アイコン・manifest・Service Worker（sw.js）
+public/               アイコンの元画像（icon.svg）・manifest・Service Worker（sw.js）
 index.html            HTML のエントリーポイント
 vite.config.ts        Vite の設定（ベースパスに合わせた manifest の生成を含む）
-generate-icons.mjs    icon.svg から PWA 用アイコンを生成するスクリプト
-icon.svg              アイコンの元画像
+pwa-assets.config.js  public/icon.svg から PWA 用アイコンを生成する設定（npm run icons）
 ```
 
 ## デプロイ
